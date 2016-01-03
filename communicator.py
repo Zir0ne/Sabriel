@@ -8,16 +8,28 @@
 import socketserver
 import threading
 import time
+import struct
+
+from dispatcher import Dispatcher
 
 
 class RequestHandler(socketserver.StreamRequestHandler):
-    """ 处理通信请求,解析载荷数据,还原交互协议数据,交予分发器 """
+    """ 处理通信请求,解析载荷数据,还原交互协议数据,交予分发器,收取响应,回复 """
+
+    # 分发器的实例
+    protocol_dispatcher = Dispatcher()
 
     def handle(self):
         """ 重写处理请求的函数,实现我们自定义的处理方式 """
-        # 读取一行,适用于处理HTTP通信数据
-        line_data = self.rfile.readline()
-        pass
+        try:
+            count_of_bytes = struct.unpack("<L", bytes(self.request.recv(3)))
+            protocol_data = bytearray(self.request.recv(count_of_bytes))
+            while len(protocol_data) < count_of_bytes:
+                remain_data = bytearray(self.request.recv(count_of_bytes))
+                protocol_data += remain_data
+            RequestHandler.protocol_dispatcher.dispatch(data=protocol_data)
+        except:
+            pass
 
 
 class ThreadingTcpServer(socketserver.ThreadingMixIn, socketserver.TCPServer):

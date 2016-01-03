@@ -16,7 +16,7 @@ class Shell(cmd.Cmd):
 
 if __name__ == "__main__":
     shell = Shell()
-    # 循环退出的唯一原因是触发了非KeyboardInterrupt异常s
+    # 循环退出的唯一原因是触发了非KeyboardInterrupt异常
     while True:
         try:
             shell.cmdloop()
